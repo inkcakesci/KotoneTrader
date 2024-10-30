@@ -37,7 +37,7 @@ def create_table_for_ticker(ticker):
     conn.commit()
     return table_name
 
-# 定义函数来获取市场数据并存储到数据库
+# 【成功】获取市场数据并存储到数据库
 def onBarUpdate(bars, hasNewBar, table_name):
     if hasNewBar:
         bar = bars[-1]
@@ -54,19 +54,20 @@ def onBarUpdate(bars, hasNewBar, table_name):
         except AttributeError as e:
             print(f"属性访问错误: {e}")
 
-# 主函数，用于监控多个标的的实时数据
+# 【没有测试过】主函数，用于监控多个标的的实时数据
+# 【已知问题：yahoo的api和ibkr的api彼此之间ticker（股票代码）不通用，需要写一个转换器】
 def main(tickers):
     contracts = []
     for ticker in tickers:
-        # 创建合约（改为港股）
+        # 创建合约（香港联合交易所）
         contract = Stock(ticker, 'SEHK', 'HKD')
         ib.qualifyContracts(contract)
         contracts.append(contract)
 
-        # 创建数据库表
+        # 创建表
         table_name = create_table_for_ticker(ticker)
 
-        # 请求5秒实时K线数据
+        # 请求5秒实时K线
         bars = ib.reqRealTimeBars(contract, 5, 'MIDPOINT', False)
         bars.updateEvent += lambda bars, hasNewBar, table_name=table_name: onBarUpdate(bars, hasNewBar, table_name)
 
